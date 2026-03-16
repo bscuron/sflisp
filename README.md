@@ -1,94 +1,101 @@
-# Salesforce JSON Lisp Interpreter
+# Lisp Interpreter in Salesforce Apex
 
 ```apex
-// (* 2 3)
-// Output: 6
-System.debug(Interpreter.eval('["*", 2, 3]'));
+LispInterpreter i = new LispInterpreter();
 
-// (* 1 2 3 4 5 6 7 8 9 10)
-// Output: 3628800
-System.debug(Interpreter.eval('["*", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]'));
+System.debug(i.eval('(+)'));                                                                 // 0
+System.debug(i.eval('(*)'));                                                                 // 1
+System.debug(i.eval('(-)'));                                                                 // 0
+//System.debug(i.eval('(/)'));                                                               // Error: wrong number of arguments
 
-// (/ 100 3)
-// Output: 33
-System.debug(Interpreter.eval('["/", 100, 3]]'));
+System.debug(i.eval('(+ 2)'));                                                               // 2
+System.debug(i.eval('(* 2)'));                                                               // 2
+System.debug(i.eval('(- 2)'));                                                               // -2
+System.debug(i.eval('(/ 2)'));                                                               // 0.5
 
-// (/ 100 3.0)
-// Output: 33.33...
-System.debug(Interpreter.eval('["/", 100, 3.0]]'));
+System.debug(i.eval('(+ 2 3)'));                                                             // 5
+System.debug(i.eval('(* 2 3)'));                                                             // 6
+System.debug(i.eval('(- 2 3)'));                                                             // -1
+System.debug(i.eval('(/ 2 3)'));                                                             // 0.67
 
-// (let ((firstName "John")
-//       (lastName "Doe"))
-//     (concat "Mr." " " firstName " " lastName))
-// Output: "Mr. John Doe"
-System.debug(Interpreter.eval('["let", [["firstName", "John"], ["lastName", "Doe"]], ["concat", "Mr.", " ", "$firstName", " ", "$lastName"]]'));
+System.debug(i.eval('(if () 1 0)'));                                                         // 0
+System.debug(i.eval('(if () 1 0 -1)'));                                                      // -1
+System.debug(i.eval('(if nil 1 0)'));                                                        // 0
+System.debug(i.eval('(if nil 1 0 -1)'));                                                     // -1
+System.debug(i.eval('(if t 1 0 -1)'));                                                       // 1
+System.debug(i.eval('(if 5 1 0 -1)'));                                                       // 1
+System.debug(i.eval('(if \'hi 1 0 -1)'));                                                    // 1
 
-// (defun fac (n)
-//     (if (<= n 1)
-//         1
-//         (* n (fac (- n 1)))))
-// (fac 5)
-// Output: 120
-System.debug(Interpreter.eval('["progn", ["defun", "fac", ["n"], ["if", ["<=", "$n", 1], 1, ["*", "$n", ["fac", ["-", "$n", 1]]]]], ["fac", 5]]'));
+System.debug(i.eval('(and)'));                                                               // t
+System.debug(i.eval('(and 1 2 3)'));                                                         // 3
+System.debug(i.eval('(and nil 2 3)'));                                                       // nil
+System.debug(i.eval('(and nil () nil)'));                                                    // nil
 
-// (and (= 1 1) (/= 1 2))
-// Output: true
-System.debug(Interpreter.eval('["and", ["=", 1, 1], ["/=", 1, 2]]'));
+System.debug(i.eval('(or)'));                                                                // nil
+System.debug(i.eval('(or nil nil 5)'));                                                      // 5
+System.debug(i.eval('(or () nil)'));                                                         // nil
+System.debug(i.eval('(or 0 1 2)'));                                                          // 0
 
-// (and)
-// Output: true
-System.debug(Interpreter.eval('["and"]'));
+System.debug(i.eval('(not nil)'));                                                           // t
+System.debug(i.eval('(not 0)'));                                                             // nil
+System.debug(i.eval('(not (not nil))'));                                                     // nil
+System.debug(i.eval('(not ())'));                                                            // t
 
-// (or)
-// Output: false
-System.debug(Interpreter.eval('["or"]'));
+System.debug(i.eval('(quote x)'));                                                           // x
+System.debug(i.eval('(quote (1 2 3))'));                                                     // (1 2 3)
+System.debug(i.eval('(quote nil)'));                                                         // nil
+System.debug(i.eval('\'x'));                                                                 // x
+System.debug(i.eval('\'(1 2 3)'));                                                           // (1 2 3)
+System.debug(i.eval('\'nil'));                                                               // nil
 
-// (= "hello" "hello")
-// Output: true
-System.debug(Interpreter.eval('["=", "hello", "hello"]'));
+System.debug(i.eval('\'(1 . 2)'));                                                           // (1 . 2)
 
-// (/= "hello" "world")
-// Output: true
-System.debug(Interpreter.eval('["/=", "hello", "world"]'));
+System.debug(i.eval('(cons 1 2)'));                                                          // (1 . 2)
+System.debug(i.eval('(car (cons 1 2))'));                                                    // 1
+System.debug(i.eval('(cdr (cons 1 2))'));                                                    // 2
+System.debug(i.eval('(cons 1 (cons 2 3))'));                                                 // (1 2 . 3)
 
-// (filter (lambda (x) (> x 1)) '(1 2 3))
-// Output: '(2 3)
-System.debug(Interpreter.eval('["filter", ["lambda", ["x"], [">", "$x", 1]], [1, 2, 3]]'));
-System.debug(Interpreter.eval('["filter", [">", "$a", 1], [1, 2, 3]]'));
+System.debug(i.eval('(cond (nil \'no) (t \'yes))'));                                         // yes
+System.debug(i.eval('(cond (t \'no) (nil \'yes))'));                                         // no
 
-// (map (lambda (x) (concat "hello, " x "!")) '("world", "there"))
-// Output: '("hello, world!", "hello, there!")
-System.debug(Interpreter.eval('["map", ["concat", "hello, ", "$a", "!"], ["world", "there"]]'));
+System.debug(i.eval('((lambda (x y) (* x y)) 2 3)'));                                        // 6
 
-// (seq-reduce (lambda (a b) (* a b)) '(1 2 3 4 5) 1)
-// Output: 120
-System.debug(Interpreter.eval('["reduce", ["*", "$a", "$b"], [1, 2, 3, 4, 5], 1]'));
+System.debug(i.eval('(let ())'));                                                            // nil
+System.debug(i.eval('(let ((a 25) (b 4)) (* a b))'));                                        // 100
+//System.debug(i.eval('(let ((a 25) (b (* a 2))) (* a b))'));                                // Error: unbound symbol a
+System.debug(i.eval('(let* ((a 25) (b (* a 2))) (* a b))'));                                 // 1250
 
-// (let ((mul (lambda (a b) (* a b))))
-//     (seq-reduce 'mul [1, 2, 3, 4, 5] 1))
-// Output: 120
-System.debug(Interpreter.eval('["let", [["mul", ["lambda", ["a", "b"], ["*", "$a", "$b"]]]], ["reduce", "$mul", [1, 2, 3, 4, 5], 1]]'));
+System.debug(i.eval('(= 1)'));                                                               // t
+System.debug(i.eval('(= 1 (/ 9 9))'));                                                       // t
+System.debug(i.eval('(= 1 2)'));                                                             // nil
+System.debug(i.eval('(eq 1 1)'));                                                            // nil
+System.debug(i.eval('(eql 1 1)'));                                                           // t
+System.debug(i.eval('(equal 1 1)'));                                                         // t
+System.debug(i.eval('(< 1 2 3)'));                                                           // t
+System.debug(i.eval('(> 1 2 3)'));                                                           // nil
+System.debug(i.eval('(<= 0 -1 -2)'));                                                        // nil
+System.debug(i.eval('(>= 0 1 2)'));                                                          // nil
+System.debug(i.eval('(/= 1 2)'));                                                            // t
+System.debug(i.eval('(/= 1 1)'));                                                            // nil
 
-// (let ((a 1))
-//     (let ((b a))
-//         (+ a b)))
-// Output: 2
-System.debug(Interpreter.eval('["let", [["a", 1]], ["let", [["b", "$a"]], ["+", "$a", "$b"]]]'));
+System.debug(i.eval('(apply * 1 2 \'(3 4 5))'));                                             // 120
+System.debug(i.eval('(defun fac (n) (if (<= n 1) 1 (* n (fac (- n 1))))) (fac 5)'));         // 120
+System.debug(i.eval('(defun fac (n) (cond ((<= n 1) 1) (t (* n (fac (- n 1)))))) (fac 5)')); // 120
 
-// (let ((a 1)
-//       (b (+ a 1)))
-//     b)
-System.debug(Interpreter.eval('["let", [["a", 1], ["b", ["+", "$a", 1]]], "$b"]'));
+System.debug(i.eval('(assoc \'b \'((a . 1) (b . 2) (c . 3)))'));                             // (b . 2)
+System.debug(i.eval('(rassoc 2 \'((a . 1) (b . 2) (c . 3)))'));                              // (b . 2)
+System.debug(i.eval('(rassoc (+ 1 1) \'((a . 1) (b . 2) (c . 3)))'));                        // (b . 2)
+System.debug(i.eval('(or (assoc \'z \'((a . 1) (b . 2) (c . 3))) (* 9 2))'));                // 18
 
-// (defun foo () x)
-// (let ((x 5))
-//     (foo)))
-// Output: Void-variable x
-// System.debug(Interpreter.eval('["progn", ["defun", "foo", [], "$x"], ["let", [["x", 5]], ["foo"]]]'));
+System.debug(i.eval('(iota 10)'));                                                           // (0 1 2 3 4 5 6 7 8 9)
+System.debug(i.eval('(iota 20 10 -1)'));                                                     // (10 9 8 7 6 5 4 3 2 1 0 -1 -2 -3 -4 -5 -6 -7 -8 -9)
+System.debug(i.eval('(iota 10 1 0)'));                                                       // (1 1 1 1 1 1 1 1 1 1)
+System.debug(i.eval('(apply \'* (iota 5 1))'));                                              // 120
 
-// (let ((x 5))
-//     (defun foo () x)
-//        (foo)))
-// Output: 5
-System.debug(Interpreter.eval('["let", [["x", 5]], ["defun", "foo", [], "$x"], ["foo"]]'));
+System.debug(i.eval('(append)'));                                                            // nil
+System.debug(i.eval('(append \'(1 2 3) \'(4 5 6))'));                                        // (1 2 3 4 5 6)
+
+System.debug(i.eval('(null nil)'));                                                          // t
+System.debug(i.eval('(null \'())'));                                                         // t
+System.debug(i.eval('(null 1)'));                                                            // nil
 ```
