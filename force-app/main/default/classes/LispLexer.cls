@@ -144,7 +144,7 @@ public class LispLexer {
                 line++;
                 lineOffset = offset;
             } else if (c == 34) { // "
-                return new Token(this, TokenType.TSTRING, start, offset, line, column);
+                return new Token(this, TokenType.TSTRING, start + 1, offset - 1, line, column);
             }
         }
 
