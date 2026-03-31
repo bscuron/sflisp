@@ -17,6 +17,8 @@ public class LispInterpreter {
         GLOBAL_ENV.set(LispSymbol.intern('let*'), new LispSpecialFormLetStar());
         GLOBAL_ENV.set(LispSymbol.intern('progn'), new LispSpecialFormProgn());
         GLOBAL_ENV.set(LispSymbol.intern('defun'), new LispSpecialFormDefun());
+        GLOBAL_ENV.set(LispSymbol.intern('map'), new LispSpecialFormMap());
+        GLOBAL_ENV.set(LispSymbol.intern('filter'), new LispSpecialFormFilter());
         GLOBAL_ENV.set(LispSymbol.intern('='), new LispSpecialFormNumericEqual());
         GLOBAL_ENV.set(LispSymbol.intern('/='), new LispSpecialFormNumericNotEqual());
         GLOBAL_ENV.set(LispSymbol.intern('<'), new LispSpecialFormNumericLessThan());
