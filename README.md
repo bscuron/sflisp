@@ -103,4 +103,6 @@ System.debug(i.eval('(map (lambda (x) (* x 100)) (iota 10 1))'));               
 System.debug(i.eval('(filter (lambda (x) (> x 500)) (map (lambda (x) (* x 100)) (iota 10 1)))')); // (600 700 800 900 1000)
 
 System.debug(i.eval('(join \'(1 2 3) ",")'));                                                     // 1,2,3
+
+System.debug(i.eval('(reverse (iota 10))'));                                                      // (9 8 7 6 5 4 3 2 1 0)
 ```

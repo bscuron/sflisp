@@ -45,6 +45,7 @@ public class LispInterpreter {
         GLOBAL_ENV.set(LispSymbol.intern('append'), new LispPrimitiveAppend());
         GLOBAL_ENV.set(LispSymbol.intern('join'), new LispPrimitiveJoin());
         GLOBAL_ENV.set(LispSymbol.intern('null'), new LispPrimitiveNull());
+        GLOBAL_ENV.set(LispSymbol.intern('reverse'), new LispPrimitiveReverse());
    }
 
     public LispInterpreter() {
