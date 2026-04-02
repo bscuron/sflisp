@@ -9,7 +9,7 @@ public class LispPrimitiveAssoc extends LispPrimitive {
         LispObject alist = args.cdar();
 
         LispObject testFnObj = args.cddr().isNil()
-            ? env.get(LispSymbol.intern('eql'))
+            ? env.get(LispSymbol.intern('equal'))
             : args.cddar().eval(env);
         if (!(testFnObj instanceof LispCallable)) {
             throw new IllegalArgumentException('assoc: TESTFN must be callable');
